@@ -21,13 +21,27 @@ export const useConnectionRequest = () => {
     setIsLoading(true);
     try {
       // Check if receiver has auto-accept enabled
-      const { data: receiverProfile } = await supabase
+      const { data: receiverProfile, error: profileError } = await supabase
         .from('profiles')
         .select('auto_accept_connections, name')
         .eq('id', receiverId)
-        .single();
+        .maybeSingle();
 
-      if (receiverProfile?.auto_accept_connections) {
+      if (profileError) {
+        console.error('Error fetching receiver profile:', profileError);
+        toast.error("Failed to check receiver preferences");
+        return { success: false };
+      }
+
+      if (!receiverProfile) {
+        toast.error("Receiver profile not found");
+        return { success: false };
+      }
+
+      console.log('Receiver auto_accept_connections:', receiverProfile.auto_accept_connections);
+
+      // Explicitly check if auto-accept is enabled (must be true, not null or false)
+      if (receiverProfile.auto_accept_connections === true) {
         // Auto-accept: Create match directly
         const pairId = [user.id, receiverId].sort().join('_');
         

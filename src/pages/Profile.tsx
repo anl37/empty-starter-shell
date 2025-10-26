@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/hooks/useAuth";
 
 const mockUserProfile = {
   name: "You",
@@ -24,6 +25,7 @@ const mockUserProfile = {
 };
 
 const Profile = () => {
+  const { user } = useAuth();
   const [safetyCheckins, setSafetyCheckins] = useState(false);
   const [emergencyNumber, setEmergencyNumber] = useState('911');
 
@@ -57,7 +59,7 @@ const Profile = () => {
           <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center text-4xl">
             {mockUserProfile.avatar}
           </div>
-          <h2 className="text-xl font-bold text-foreground mb-1">{mockUserProfile.name}</h2>
+          <h2 className="text-xl font-bold text-foreground mb-1">{user?.email || 'You'}</h2>
           <p className="text-sm text-muted-foreground mb-4">{mockUserProfile.tagline}</p>
           
           <Button variant="outline" className="rounded-full">

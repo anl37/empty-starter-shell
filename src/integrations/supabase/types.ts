@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      connection_requests: {
+        Row: {
+          created_at: string
+          id: string
+          receiver_id: string
+          sender_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          receiver_id: string
+          sender_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          receiver_id?: string
+          sender_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       matches: {
         Row: {
           created_at: string | null
@@ -73,6 +100,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          auto_accept_connections: boolean | null
           availability_status: string | null
           avatar_url: string | null
           created_at: string | null
@@ -90,6 +118,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          auto_accept_connections?: boolean | null
           availability_status?: string | null
           avatar_url?: string | null
           created_at?: string | null
@@ -107,6 +136,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          auto_accept_connections?: boolean | null
           availability_status?: string | null
           avatar_url?: string | null
           created_at?: string | null

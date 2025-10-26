@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { WeeklyPresence } from "@/components/WeeklyPresence";
 import { ConnectPing } from "@/components/ConnectPing";
+import { useConnectionRequest } from "@/hooks/useConnectionRequest";
 import { Sparkles, Clock, Users, MapPin } from "lucide-react";
 
 interface User {
@@ -30,6 +31,14 @@ interface UserCardProps {
 
 export const UserCard = ({ user, onConnect }: UserCardProps) => {
   const [showProfile, setShowProfile] = useState(false);
+  const { sendConnectionRequest, isLoading } = useConnectionRequest();
+
+  const handleConnect = async () => {
+    const result = await sendConnectionRequest(user.id, user.name);
+    if (result.success) {
+      onConnect?.(user.name);
+    }
+  };
 
   return (
     <>
@@ -100,11 +109,12 @@ export const UserCard = ({ user, onConnect }: UserCardProps) => {
         <Button
           onClick={(e) => {
             e.stopPropagation();
-            onConnect?.(user.name);
+            handleConnect();
           }}
+          disabled={isLoading}
           className="w-full mt-3 gradient-warm shadow-soft hover:shadow-glow transition-all"
         >
-          Connect
+          {isLoading ? 'Connecting...' : 'Connect'}
         </Button>
       </div>
 
@@ -167,11 +177,12 @@ export const UserCard = ({ user, onConnect }: UserCardProps) => {
             <Button
               onClick={() => {
                 setShowProfile(false);
-                onConnect?.(user.name);
+                handleConnect();
               }}
+              disabled={isLoading}
               className="w-full gradient-warm shadow-soft hover:shadow-glow transition-all"
             >
-              Connect with {user.name}
+              {isLoading ? 'Connecting...' : `Connect with ${user.name}`}
             </Button>
           </div>
         </DialogContent>

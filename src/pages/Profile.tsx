@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { User, Clock, MapPin, Settings, Shield } from "lucide-react";
+import { User, Clock, MapPin, Settings, Shield, Users } from "lucide-react";
 import { TabNavigation } from "@/components/TabNavigation";
 import { WeeklyPresence } from "@/components/WeeklyPresence";
+import { ConnectionRequestsPanel } from "@/components/ConnectionRequestsPanel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -30,6 +31,7 @@ const Profile = () => {
   const [safetyCheckins, setSafetyCheckins] = useState(false);
   const [emergencyNumber, setEmergencyNumber] = useState('911');
   const [userName, setUserName] = useState<string | null>(null);
+  const [autoAcceptConnections, setAutoAcceptConnections] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -37,17 +39,31 @@ const Profile = () => {
       
       const { data } = await supabase
         .from('profiles')
-        .select('name')
+        .select('name, auto_accept_connections')
         .eq('id', user.id)
         .maybeSingle();
       
-      if (data?.name) {
-        setUserName(data.name);
+      if (data) {
+        if (data.name) setUserName(data.name);
+        setAutoAcceptConnections(data.auto_accept_connections || false);
       }
     };
 
     fetchProfile();
   }, [user?.id]);
+
+  const handleAutoAcceptToggle = async (enabled: boolean) => {
+    if (!user?.id) return;
+    
+    const { error } = await supabase
+      .from('profiles')
+      .update({ auto_accept_connections: enabled })
+      .eq('id', user.id);
+    
+    if (!error) {
+      setAutoAcceptConnections(enabled);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-subtle pb-24">
@@ -133,6 +149,39 @@ const Profile = () => {
             <p>☕ 65% of connections at cafés</p>
             <p>📅 Most active on weekends</p>
           </div>
+        </div>
+
+        {/* Connection Requests */}
+        <ConnectionRequestsPanel />
+
+        {/* Connection Preferences */}
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-muted-foreground px-1 flex items-center gap-2">
+            <Users className="w-4 h-4" />
+            Connection Preferences
+          </h3>
+          
+          <Card className="p-4 gradient-card">
+            <div className="space-y-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-0.5 flex-1">
+                  <Label htmlFor="auto-accept" className="text-sm font-medium">
+                    Auto-accept connections
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    {autoAcceptConnections 
+                      ? "You'll automatically connect with anyone who sends you a ping" 
+                      : "You'll review each connection request before accepting"}
+                  </p>
+                </div>
+                <Switch
+                  id="auto-accept"
+                  checked={autoAcceptConnections}
+                  onCheckedChange={handleAutoAcceptToggle}
+                />
+              </div>
+            </div>
+          </Card>
         </div>
 
         {/* Safety Settings */}

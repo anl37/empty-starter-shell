@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { User, Clock, MapPin, Settings, Shield } from "lucide-react";
 import { TabNavigation } from "@/components/TabNavigation";
 import { WeeklyPresence } from "@/components/WeeklyPresence";
@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 const mockUserProfile = {
   name: "You",
@@ -28,6 +29,25 @@ const Profile = () => {
   const { user } = useAuth();
   const [safetyCheckins, setSafetyCheckins] = useState(false);
   const [emergencyNumber, setEmergencyNumber] = useState('911');
+  const [userName, setUserName] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user?.id) return;
+      
+      const { data } = await supabase
+        .from('profiles')
+        .select('name')
+        .eq('id', user.id)
+        .maybeSingle();
+      
+      if (data?.name) {
+        setUserName(data.name);
+      }
+    };
+
+    fetchProfile();
+  }, [user?.id]);
 
   return (
     <div className="min-h-screen bg-gradient-subtle pb-24">
@@ -59,7 +79,8 @@ const Profile = () => {
           <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center text-4xl">
             {mockUserProfile.avatar}
           </div>
-          <h2 className="text-xl font-bold text-foreground mb-1">{user?.email || 'You'}</h2>
+          <h2 className="text-xl font-bold text-foreground mb-1">{userName || 'You'}</h2>
+          <p className="text-sm text-muted-foreground">{user?.email}</p>
           <p className="text-sm text-muted-foreground mb-4">{mockUserProfile.tagline}</p>
           
           <Button variant="outline" className="rounded-full">
